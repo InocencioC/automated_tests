@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.star_wars_api.domain.Planet;
 import com.example.star_wars_api.domain.PlanetService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,4 +38,25 @@ public class PlanetControllerTest {
                  .andExpect(status().isCreated())
                 .andExpect(jsonPath("$").value(PLANET));
         } 
-}
+
+        @Test
+        public void createdPlanet_WithInvalidData_ReturnsBadRequest() throws Exception {
+            Planet emptyPlanet = new Planet();
+            Planet invalidPlanet = new Planet("", "", "");
+
+            mockMvc
+                .perform( 
+                    post("/planets").content(objectMapper.writeValueAsString(emptyPlanet))
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnprocessableEntity());
+
+            mockMvc
+            .perform( 
+                post("/planets").content(objectMapper.writeValueAsString(invalidPlanet))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnprocessableEntity());
+
+
+        }
+    }
+
