@@ -18,7 +18,7 @@ public class Planet {
     private Long id;
 
     @NotEmpty
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
     @NotEmpty
     @Column(nullable = false)
@@ -30,7 +30,7 @@ public class Planet {
     public Planet() {
     }
     
-    public Planet(String string, String string2, String string3){
+    public Planet(String name, String climate, String terrain){
         this.name = name;
         this.climate = climate;
         this.terrain = terrain;
