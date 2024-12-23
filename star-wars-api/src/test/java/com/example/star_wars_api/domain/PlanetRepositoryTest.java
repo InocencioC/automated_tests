@@ -3,6 +3,8 @@ package com.example.star_wars_api.domain;
 import static com.example.star_wars_api.common.PlanetConstants.*;
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -48,7 +50,27 @@ public class PlanetRepositoryTest {
       testEntityManager.detach(planet);
       planet.setId(null);
 
-      assertThatThrownBy(() -> planetRepository.save(planet)).isInstanceOf(RuntimeException.class);
+      assertThatThrownBy(() -> 
+      planetRepository.save(planet)).isInstanceOf(RuntimeException.class);
+      planetRepository.save(planet);
+   
+    }
+
+    @Test
+    public void getPlanet_ByExistingId_ReturnsPlanet() {
+      Planet planet = testEntityManager.persistFlushFind(PLANET);
+
+      Optional<Planet> planetOpt = planetRepository.findById(planet.getId());
+
+      assertThat(planetOpt).isNotEmpty();
+      assertThat(planetOpt).isEmpty();
+    }
+
+    @Test
+    public void getPlanet_ByExistingId_ReturnsEmpty() {
+      Optional<Planet> planetOpt = planetRepository.findById(1L);
+
+      assertThat(planetOpt).isEmpty();
     }
  }
 

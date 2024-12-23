@@ -1,9 +1,14 @@
 package com.example.star_wars_api.web;
 
+import static org.mockito.Answers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Optional;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static com.example.star_wars_api.common.PlanetConstants.PLANET;
 
@@ -11,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -54,9 +60,34 @@ public class PlanetControllerTest {
             .perform( 
                 post("/planets").content(objectMapper.writeValueAsString(invalidPlanet))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isUnprocessableEntity());
-
-
+            .andExpect(status().isUnprocessableEntity());
         }
-    }
+        @Test
+        public void createdPlanet_WithExistingName_ReturnsConflict() throws Exception {
+            when(planetService.create(any())).thenThrow(DataIntegrityViolationException.class);
+       
+            mockMvc
+                .perform(
+                    post("/planets").content(objectMapper.writeValueAsString(PLANET))
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isConflict());
+        }
+
+        @Test
+        public void getPlanet_ByExistingId_ReturnsPlanet() throws Exception {
+            when(planetService.get(1L)).thenReturn(Optional.of(PLANET));
+         
+            mockMvc
+                 .perform( 
+                     get("/planets/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(PLANET));
+        }
+
+        @Test
+        public void getPlanet_ByUnexistingId_ReturnsNotFound() throws Exception {
+            mockMvc.perform(get("/planets/1"))
+            .andExpect(status().isNotFound());
+        }
+     }
 
